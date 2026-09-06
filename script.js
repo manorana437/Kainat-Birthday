@@ -1,36 +1,30 @@
-const screen=document.getElementById("screen");
-const progressBar=document.getElementById("progressBar");
-const stepLabel=document.getElementById("stepLabel");
-const music=document.getElementById("music");
-const soundBtn=document.getElementById("soundBtn");
-let step=1,musicStarted=false,paused=false;
-
+const screen=document.querySelector("#screen"),bar=document.querySelector("#bar"),stepNo=document.querySelector("#step"),music=document.querySelector("#music"),sound=document.querySelector("#sound");
+let step=0,popped=0,mi=0,timer;
 const media=[
- {type:"image",src:"assets/kainat-1.jpg",quote:"Kainat, meri zindagi ki sabse khoobsurat dosti mein se ek ho tum. 💜✨"},
- {type:"image",src:"assets/kainat-2.jpg",quote:"Some people become memories, but besties become a forever feeling. 🫶🏻💜"},
- {type:"image",src:"assets/kainat-3.jpg",quote:"No matter where life takes us, you will always be my Bestie Kainat. 💕🌙"},
- {type:"video",src:"assets/kainat-video.mp4",quote:"And this little moment? One of my favourite memories with you. 🥹💜"}
+["image","assets/kainat-1.jpg","Happy Birthday, My Bestie Kainat ♡","May your life be filled with as much happiness as you give to others."],
+["image","assets/kainat-2.jpg","My beautiful bestie ♡","Every little memory with you is special."],
+["image","assets/kainat-3.jpg","Forever my Bestie ♡","No matter where life takes us, our memories stay."],
+["video","assets/kainat-video.mp4","I love u Bestie ♡ Kainat","One more little memory to keep forever."]
 ];
-function update(){progressBar.style.width=`${step/8*100}%`;stepLabel.textContent=`${String(step).padStart(2,"0")} / 08`}
-function startMusic(){if(musicStarted)return;musicStarted=true;music.volume=.48;music.play().catch(()=>{})}
-function page(content){screen.innerHTML=`<div class="page">${content}</div>`;update()}
-function go(n){step=n;render();update();flash()}
-function flash(){const x=document.createElement("div");x.className="fade";document.body.appendChild(x);setTimeout(()=>x.remove(),450)}
-function celebration(){const box=document.createElement("div");box.className="celebration";document.body.appendChild(box);const icons=["💜","💖","💕","💗","✨","🫶🏻","🌸","💝","🥰","♥"];for(let i=0;i<32;i++){const p=document.createElement("span");p.className="particle";p.textContent=icons[Math.floor(Math.random()*icons.length)];p.style.setProperty("--x",`${(Math.random()-.5)*640}px`);p.style.setProperty("--y",`${(Math.random()-.5)*720}px`);p.style.setProperty("--r",`${Math.random()*720-360}deg`);p.style.animationDelay=`${Math.random()*.15}s`;box.appendChild(p)}setTimeout(()=>box.remove(),1600)}
-function render(){
- if(step===1)page(`<div class="eyebrow">A LITTLE SURPRISE FOR YOU</div><div class="locket"></div><div class="hero">Happy Birthday,<br><span>MY BESTIE KAINAT</span> 💜</div><p class="sub">A tiny digital gift for the girl who makes ordinary moments feel unforgettable.</p><button class="btn" id="open">Open My Heart →</button><div class="micro">tap to begin</div>`);
- if(step===2)page(`<div class="eyebrow">JUST ONE QUESTION</div><div class="hero" style="font-size:49px">Ready for<br><span>your surprise?</span></div><p class="sub">There are a few little moments waiting just for you. 🌙</p><div class="choice"><button class="btn" id="yes">Yes ♡</button><button class="btn ghost" id="no">Maybe...</button></div>`);
- if(step===3)renderBalloons();
- if(step===4)page(`<div class="eyebrow">MAKE A WISH</div><div class="cake">🎂</div><div class="wish">Close your eyes<br>& make a beautiful wish.</div><div class="sparkles">✦ ✧ ✦ ✧ ✦</div><button class="btn" id="blow" style="margin-top:24px">Blow the candle ✨</button>`);
- if(step===5)page(`<div class="eyebrow">A MESSAGE FROM MY HEART</div><div class="envelope" id="envelope">💌</div><div class="hero" style="font-size:39px">For my <span>Bestie</span></div><p class="sub">There's something I want you to read. 💜</p><button class="btn" id="openLetter">Open Letter</button>`);
- if(step===6){page(`<div class="eyebrow">DEAR KAINAT,</div><div class="letter"><h3>Happy Birthday to my beautiful bestie! 🎂💜</h3><p>You are not just my friend, you are one of those rare people who make life softer, happier, and a whole lot more fun.</p><p>Thank you for every laugh, every random conversation, every little memory, and every time you have simply been there. I am genuinely grateful for you.</p><p>On your special day, I wish you endless happiness, beautiful surprises, success in everything you dream of, and a heart that always has a reason to smile. May this year be your most magical one yet! ✨</p><p style="text-align:right;color:#8d3154">Forever your bestie, ♥</p></div>`);setTimeout(()=>{if(step===6)go(7)},7500)}
- if(step===7)page(`<div class="eyebrow">ONE LAST LITTLE THING</div><div class="gift" id="gift">🎁</div><div class="hero" style="font-size:42px">A gift,<br><span>just for you.</span></div><p class="sub">Tap the box. 💜</p>`);
- if(step===8)renderMedia(0);
+function musicOn(){music.play().then(()=>sound.textContent="🔊").catch(()=>{})}
+sound.onclick=()=>music.paused?musicOn():(music.pause(),sound.textContent="🔇");
+function render(h){screen.innerHTML=h;bar.style.width=(Math.min(step+1,8)/8*100)+"%";stepNo.textContent=String(Math.min(step+1,8)).padStart(2,"0")+" / 08"}
+function go(n){clearTimeout(timer);step=n;renderStep()}
+function renderStep(){
+clearTimeout(timer);
+if(step===0)render(`<div class="page"><div class="kicker">A LITTLE SURPRISE FOR YOU</div><div class="orn">♡ ✧ ♡</div><div class="script">My Bestie</div><div class="name">KAINAT</div><div class="rule">— ♥ —</div><div class="body">A tiny digital gift for the girl who makes life brighter, funner and more beautiful. ♡</div><button class="btn" id="open">Open My Heart →</button><div class="tap">tap to begin ♥</div></div>`);
+if(step===1)render(`<div class="page"><div class="kicker">JUST ONE QUESTION</div><div class="orn">— ♥ —</div><div class="big">Ready for<br>your surprise?</div><div class="mini">There are a few little moments waiting for you. ♡</div><div class="choice"><button class="btn" id="yes">Yes ♡</button><button class="btn alt" id="maybe">Maybe...</button></div><div class="orn" style="margin-top:42px">— ♥ —</div></div>`);
+if(step===2){popped=0;render(`<div class="page balloons"><div class="kicker">A LITTLE FUN FIRST</div><div class="title">Pop all<br>4 balloons</div><div class="counter"><span id="count">0</span> / 4</div><div class="balloon-grid"><button class="balloon">🎈</button><button class="balloon">🎈</button><button class="balloon">🎈</button><button class="balloon">🎈</button></div></div>`)}
+if(step===3)render(`<div class="page cake-page"><div class="kicker">MAKE A WISH ♥</div><div class="cake">🎂</div><div class="wish">Close your eyes<br>& make a beautiful wish. ♡</div><div class="starsline">✦ ✧ ✦ ✧ ✦</div><button class="btn" id="blow">Blow the candle ✧</button></div>`);
+if(step===4)render(`<div class="page"><div class="special-title">You are so special</div><div class="special-heart">♥</div><div class="body">You are my sweet soul, my rock, and someone I am so grateful to have in my life. 🫶🏻</div><button class="btn" id="special">Continue ♡</button></div>`);
+if(step===5)render(`<div class="page envelope-page"><div class="kicker">A MESSAGE FROM MY HEART ♥</div><div class="envelope" id="envelope">💌</div><div class="for">For my<strong>Kainat</strong></div><div class="body">There's something I want you to read. ♡</div><button class="btn" id="openLetter">Open Letter</button></div>`);
+if(step===6)render(`<div class="page letter-page"><div class="letter-head">DEAR MY BESTIE,</div><div class="letter"><p>Happy Birthday to someone truly special! ♡</p><p>You are my sweet soul, my rock, and someone I am so grateful to have in my life.</p><p>You bring so much happiness, love and positivity into my world.</p><p>On your special day, I wish you all the happiness, success and joy you deserve. May this year bring you countless beautiful moments!</p><p>Stay happy, stay you, always. ♡</p><p>With all my love, ♡</p></div><button class="btn" id="letterNext" style="margin-top:10px">One Last Little Thing ♥</button></div>`);
+if(step===7)render(`<div class="page gift-page"><div class="kicker">ONE LAST LITTLE THING ♥</div><div class="gift" id="gift">🎁</div><div class="giftcap">A gift,<br>just for you. ♡</div><button class="btn" id="tapGift">Tap the box</button></div>`);
+if(step===8){render(`<div class="page memories"><div class="memory-title">Happy Birthday, My Bestie Kainat ♡</div><div class="frame" id="frame"></div><div class="caption" id="caption"></div><div class="sub" id="sub"></div><div class="dots" id="dots"></div></div>`);showMedia()}
 }
-function renderBalloons(){page(`<div class="eyebrow">A LITTLE FUN FIRST</div><div class="hero" style="font-size:43px">Pop all<br><span>4 balloons</span></div><div class="counter" id="counter">0 / 4</div><div class="balloon-area"><button class="balloon">💜</button><button class="balloon">💖</button><button class="balloon">💗</button><button class="balloon">💕</button></div>`);let popped=0;document.querySelectorAll(".balloon").forEach(b=>b.onclick=()=>{if(b.classList.contains("popped"))return;b.classList.add("popped");popped++;celebration();document.getElementById("counter").textContent=`${popped} / 4`;if(popped===4)setTimeout(()=>go(4),700)})}
-function renderMedia(index){const p=media[index];const visual=p.type==="video"?`<video id="memoryVideo" src="${p.src}" muted playsinline preload="metadata"></video>`:`<img src="${p.src}" alt="Kainat birthday memory ${index+1}">`;screen.innerHTML=`<div class="page media-page"><div class="media-title">Happy Birthday,<br>MY BESTIE KAINAT ♡</div><div class="media-frame">${visual}</div><div class="quote">${p.quote}</div><div class="dots">${media.map((_,i)=>`<span class="dot ${i===index?"active":""}"></span>`).join("")}</div></div>`;update();if(p.type==="video"){const v=document.getElementById("memoryVideo");v.play().catch(()=>{})}if(index<media.length-1)setTimeout(()=>{if(step===8&&!paused)renderMedia(index+1)},4300);else setTimeout(()=>{if(step===8&&!paused)renderFinal()},5000)}
-function renderFinal(){screen.innerHTML=`<div class="page"><div class="final-heart">♥</div><div class="hero" style="font-size:46px">Love you forever,<br><span>My Bestie Kainat</span> 💜</div><div class="signature">Happy Birthday, Kainat.</div></div>`;update();celebration()}
-
-document.addEventListener("click",e=>{if(e.target.closest("#open")){startMusic();go(2)}if(e.target.closest("#yes")){startMusic();go(3)}if(e.target.closest("#no")){e.target.closest("#no").animate([{transform:"translateX(0)"},{transform:"translateX(16px)"},{transform:"translateX(-16px)"},{transform:"translateX(0)"}],{duration:420})}if(e.target.closest("#blow")){celebration();go(5)}if(e.target.closest("#openLetter")||e.target.closest("#envelope"))go(6);if(e.target.closest("#gift")){celebration();go(8)}});
-soundBtn.onclick=()=>{startMusic();music.muted=!music.muted;soundBtn.textContent=music.muted?"×":"♪"};
-render();
+function showMedia(){clearTimeout(timer);const m=media[mi],f=document.querySelector("#frame");if(!f)return;f.innerHTML=m[0]==="video"?`<video src="${m[1]}" autoplay muted playsinline controls></video>`:`<img src="${m[1]}" alt="Kainat memory">`;document.querySelector("#caption").textContent=m[2];document.querySelector("#sub").textContent=m[3];document.querySelector("#dots").innerHTML=media.map((_,i)=>`<span class="dot ${i===mi?"active":""}"></span>`).join("");timer=setTimeout(()=>{mi=(mi+1)%media.length;showMedia()},m[0]==="video"?9000:3200)}
+document.addEventListener("click",e=>{const b=e.target.closest("button,.envelope,.gift");if(!b)return;
+if(b.id==="open"){musicOn();go(1)}else if(b.id==="yes"||b.id==="maybe"){musicOn();go(2)}
+else if(b.classList.contains("balloon")&&!b.classList.contains("popped")){b.classList.add("popped");popped++;const c=document.querySelector("#count");if(c)c.textContent=popped;if(popped===4)setTimeout(()=>go(3),420)}
+else if(b.id==="blow"){musicOn();go(4)}else if(b.id==="special"){go(5)}else if(b.id==="envelope"||b.id==="openLetter"){go(6)}else if(b.id==="letterNext"){go(7)}else if(b.id==="gift"||b.id==="tapGift"){go(8)}});
+renderStep();
